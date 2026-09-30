@@ -88,6 +88,6 @@ To add a scene, write `scenes/foo.js` in the same shape. Then add a line to `SCE
 
 ```bash
 node render.mjs market2 --fps 24 --aa 0 --fxaa 1 --w 1600 --h 900 --out out/clips/meat_market_silent.mp4
-python3 market_sound2.py      # -> out/market_sound_v2.wav (yelling crowd, long calls; market_sound.py = v1)
+python3 scenes/market_sound2.py   # -> out/market_sound_v2.wav (yelling crowd, long calls; market_sound.py = v1)
 ffmpeg -i out/clips/meat_market_silent.mp4 -i out/market_sound_v2.wav -c:v copy -c:a aac -shortest out/clips/meat_market.mp4
 ```
