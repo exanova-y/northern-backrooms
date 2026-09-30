@@ -1,0 +1,35 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+import { setup } from './lib.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
+const q = new URLSearchParams(location.search);
+const name = q.get('scene');
+try {
+  const mod = await import(`./scenes/${name}.js`);
+  const app = setup({ w: +(q.get('w') || 1280), h: +(q.get('h') || 720), aa: q.get('aa') !== '0', soft: q.get('soft') !== '0' });
+  await document.fonts.load('900 100px "Noto Sans CJK SC"');
+  const update = await mod.build(app);
+  window.DUR = mod.DUR;
+  let render = () => app.renderer.render(app.scene, app.camera);
+  if (q.get('fxaa') === '1') {
+    const W = app.renderer.domElement.width, H = app.renderer.domElement.height;
+    const comp = new EffectComposer(app.renderer);
+    comp.addPass(new RenderPass(app.scene, app.camera));
+    comp.addPass(new OutputPass());
+    const fx = new ShaderPass(FXAAShader); fx.material.uniforms.resolution.value.set(1 / W, 1 / H); comp.addPass(fx);
+    render = () => comp.render();
+  }
+  window.renderAt = (t) => { update(t); render(); };
+  window.grab = () => app.renderer.domElement.toDataURL('image/jpeg', 0.94);
+  window.READY = true;
+} catch (e) { window.ERR = String(e.stack || e); }
+</script>
+</body></html>
